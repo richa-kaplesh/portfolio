@@ -10,10 +10,19 @@ interface Props {
 }
 const { id, project, url, href } = Astro.props;
 const Tag = href ? 'a' : 'span';
+const tipId = `status-${id}`;
 ---
 
-<div class="status inline-flex items-center gap-1">
-  <Tag class="pill meta" href={href} data-health={url} data-state="unknown">
+{/* The explanation shows on hover and keyboard focus. On touch screens the ? button opens it. */}
+<div class="status" data-status>
+  <Tag
+    class="pill meta"
+    href={href}
+    data-health={url}
+    data-state="unknown"
+    aria-describedby={tipId}
+    tabindex={href ? undefined : 0}
+  >
     <span class="light" aria-hidden="true"></span>
     <span class="sr-only">
       {href ? `Open ${project}. Backend status: ` : `${project} backend: `}
@@ -22,21 +31,26 @@ const Tag = href ? 'a' : 'span';
   </Tag>
   <button
     type="button"
-    class="why"
-    popovertarget={`status-${id}`}
+    class="why js-only"
+    aria-expanded="false"
+    aria-controls={tipId}
     aria-label={`What the ${project} status means`}
   >
     ?
   </button>
-  <div class="tip" id={`status-${id}`} popover>
-    <p>
-      This backend runs on Render's free tier, which sleeps when nobody is using it. The first
-      request wakes it, and that can take up to a minute. "Waking up" means it is starting now.
-    </p>
-  </div>
+  <p class="tip" id={tipId} role="tooltip" data-tip>
+    This backend runs on Render's free tier, which sleeps when nobody is using it. The first request
+    wakes it, which can take up to a minute.
+  </p>
 </div>
 
 <style>
+  .status {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
   .pill {
     display: inline-flex;
     align-items: center;
@@ -63,7 +77,8 @@ const Tag = href ? 'a' : 'span';
     font-size: 0.875rem;
     cursor: pointer;
   }
-  .why:hover {
+  .why:hover,
+  .why[aria-expanded='true'] {
     color: var(--accent);
   }
   .light {
@@ -85,22 +100,36 @@ const Tag = href ? 'a' : 'span';
     border-radius: 0;
   }
   .tip {
-    max-width: min(20rem, calc(100vw - 2rem));
-    margin: auto;
-    padding: 1rem;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 5;
+    width: max-content;
+    max-width: min(21rem, calc(100vw - 2.5rem));
+    margin-top: 0.4rem;
+    padding: 0.85rem 1rem;
     border: 1px solid var(--soft);
     border-radius: 3px;
     background: var(--card);
     color: var(--ink);
     font-size: 1rem;
     line-height: 1.45;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 0.12s,
+      visibility 0.12s;
   }
-  @supports (position-area: bottom) {
-    .tip {
-      position-area: bottom span-right;
-      position-try-fallbacks: flip-block, flip-inline;
-      margin: 0.4rem 0;
-    }
+  /* An invisible bridge, so the pointer can move from the pill onto the tooltip without closing it. */
+  .tip::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem 0 100% 0;
+  }
+  .status:has(.pill:hover, .pill:focus-visible, .tip:hover):not([data-dismissed]) .tip,
+  .status[data-open] .tip {
+    visibility: visible;
+    opacity: 1;
   }
 </style>
 
@@ -108,4 +137,32 @@ const Tag = href ? 'a' : 'span';
   import { startStatus } from '@/islands/status';
 
   startStatus();
+
+  for (const status of document.querySelectorAll<HTMLElement>('[data-status]')) {
+    const why = status.querySelector<HTMLButtonElement>('.why');
+    const close = () => {
+      delete status.dataset.open;
+      why?.setAttribute('aria-expanded', 'false');
+    };
+    why?.addEventListener('click', () => {
+      const open = status.dataset.open === undefined;
+      if (open) status.dataset.open = '';
+      else close();
+      why.setAttribute('aria-expanded', String(open));
+    });
+    // Escape hides the tooltip until the pointer or focus leaves, as WCAG 1.4.13 asks.
+    // It listens on the document, because a mouse user's focus is usually somewhere else.
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const shown = status.querySelector('[data-tip]');
+      if (!shown || getComputedStyle(shown).visibility !== 'visible') return;
+      status.dataset.dismissed = '';
+      close();
+    });
+    status.addEventListener('pointerleave', () => delete status.dataset.dismissed);
+    status.addEventListener('focusout', () => delete status.dataset.dismissed);
+    document.addEventListener('click', (event) => {
+      if (!status.contains(event.target as Node)) close();
+    });
+  }
 </script>
