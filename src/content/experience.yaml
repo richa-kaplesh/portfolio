@@ -6,10 +6,10 @@
   org: LearnLine AI (IntelGrader)
   start: Oct 2026
   current: true
-  summary: Speeding up and fixing the LLM grading pipeline for handwritten exam sheets. The red pen service now takes 11.0 s per sheet, down from 16.6 s.
+  summary: Engineering on the LLM grading pipeline for handwritten exam sheets. Cut the red pen service from 16.6 s to 11.0 s per sheet.
   highlights:
-    - Working on the LLM grading pipeline for handwritten exam sheets. I check graded sheets against the scanned pages and fix the code that loses marks the model awarded correctly.
     - Sped up the red pen service that draws marks on answer sheets from 16.6 s to 11.0 s per sheet, and to 4.4 s for a redraw after a teacher edit, by reusing per-page image analysis and caching unchanged pages.
+    - Fix code in the LLM grading pipeline where marks the model awarded correctly were lost before reaching the graded sheet.
 - id: nokia
   order: 2
   kind: work

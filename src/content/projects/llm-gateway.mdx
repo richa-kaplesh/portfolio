@@ -13,22 +13,34 @@ apiUrl: https://llm-gateway-qewa.onrender.com/docs
 apiLabel: API docs
 healthUrl: https://llm-gateway-qewa.onrender.com/health
 metrics:
+  - label: Provider rate-limit errors, two instances sharing quota in Redis
+    after: 0 in 6,000+ calls
+    context: Controlled local load test against a mock provider
   - label: Gateway error rate
     before: 21.0%
     after: 6.7%
+    context: Production traffic vs one eval run, not controlled
   - label: Latency p95
     before: 25.7 s
     after: 0.99 s
+    context: Production traffic vs one eval run, not controlled
   - label: Fallback rate
     before: 20.0%
     after: 7.8%
-  - label: Unanswered questions, real client
-    before: 3/45
-    after: 0/50
-  - label: Provider rate-limit errors, two instances sharing Redis
-    after: 0 in 6,000+ calls
-    context: local load test, mock provider
-metricsNote: 'Live deployment. Before: all gateway traffic on the original design, 1 Oct to 18 Nov 2026 (1,444 requests). After: QueryMind running a 50-question evaluation on 20 Nov 2026.'
+    context: Production traffic vs one eval run, not controlled
+  - label: Questions with no answer
+    before: 3 of 45
+    after: 0 of 50
+    context: Two different eval runs, with 45 and 50 questions
+metricsNote: 'Before: all production traffic on the original design, 1 Oct to 18 Nov 2026 (1,444 requests). After: one 50-question QueryMind eval run on 20 Nov 2026. Different traffic, so these four rows are not a controlled comparison.'
+resume:
+  subtitle: Multi-provider LLM API
+  stack: Python, FastAPI, Redis, PostgreSQL, Docker
+  bullets:
+    - Built routing across 5 free-tier Groq and OpenRouter API keys (8 key-model pairs), tracking each one's per-minute and daily quota.
+    - 'Shared quota state across instances in Redis. Provider rate-limit errors with two instances: {{Provider rate-limit errors, two instances sharing quota in Redis}}, in a local load test against a mock provider.'
+    - 'Replaced retry-in-place with instant failover and circuit breakers. Error rate {{Gateway error rate}} and p95 latency {{Latency p95}}, comparing production traffic (Oct to Nov) with one 50-question eval run.'
+    - Added admission control that rejects excess load with a 429 instead of queueing indefinitely; load-tested up to 150 simulated users.
 ---
 
 ## Problem
@@ -97,7 +109,9 @@ Counting this way changes what a failure means. A 429 belongs to one account, so
 
 The largest change was in the tail. Three 2-second sleeps on the same key plus a 20-second queue gave a p95 of 25.7 s. Failing over at once brought it to 0.99 s, while p50 moved from 0.61 s to 0.52 s. Attempts spread across the three Groq keys as 61 / 58 / 58.
 
-The before and after windows are different traffic, so read them as the system in use, not as a controlled experiment. Capacity was measured separately and locally, against a mock provider: two instances sharing Redis handled about 3,000 calls per minute at 100 users, with a p95 of about 2.3 s.
+These numbers are not a controlled comparison. The before window is seven weeks of production traffic and the after window is one 50-question eval run. The next measurement is a replay of the same fixed request set through both designs.
+
+Capacity was measured separately and locally, against a mock provider. Two instances sharing quota state in Redis sent over 6,000 calls with no provider rate-limit errors, and handled about 3,000 calls per minute at 100 users with a p95 of about 2.3 s.
 
 ## What I'd do next
 

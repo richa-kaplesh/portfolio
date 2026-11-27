@@ -27,7 +27,7 @@ const { data } = project;
     <ProjectLinks project={data} />
   </div>
   <div>
-    <Metrics metrics={data.metrics} note={data.metricsNote} animate />
+    <Metrics metrics={data.metrics} note={data.metricsNote} proof={data.proof} animate />
   </div>
   <a class="link justify-self-start py-1" href={`/projects/${project.id}`}>
     Read the {data.title} case study

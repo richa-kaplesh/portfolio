@@ -96,3 +96,19 @@ export async function getNav() {
     ['About', '/about'],
   ] as [string, string][];
 }
+
+/** Replaces {{Metric label}} with that metric's value ("before → after"). Unknown labels fail the build. */
+export function expandMetrics(
+  text: string,
+  metrics: { label: string; before?: string; after: string }[],
+  project: string,
+) {
+  return text.replace(/\{\{([^}]+)\}\}/g, (_, label: string) => {
+    const metric = metrics.find((m) => m.label === label.trim());
+    if (!metric)
+      throw new Error(`projects/${project}: the resume uses an unknown metric "${label}".`);
+    // A no-break space keeps a number and its unit together, as in 0.99 s.
+    const keep = (value: string) => value.replace(/(\d) (?=[a-z%])/g, '$1 ');
+    return metric.before ? `${keep(metric.before)} → ${keep(metric.after)}` : keep(metric.after);
+  });
+}

@@ -11,16 +11,31 @@ liveUrl: https://query-mind-cyan.vercel.app/#/
 apiUrl: https://query-mind.onrender.com/
 healthUrl: https://query-mind.onrender.com/
 metrics:
-  - label: Correct behavior, 50-question eval
+  - label: Correct behavior, same model in both runs
+    before: 14/35
+    after: 28/35
+    context: The 35 questions answered only by gpt-oss-20b in both runs
+  - label: Correct behavior, all 50 questions
     before: 21/50
     after: 41/50
+    context: 'Model mix changed: in the second run, 51 of 165 calls went to a larger fallback model'
   - label: LLM calls per correct answer
     before: '6.43'
     after: '4.02'
-  - label: Cross-user data leaks
-    after: '0'
-    context: 5-user load test
-metricsNote: 'Baseline 20 Nov 2026, after 22 Nov 2026: same questions, same scorer, one run. On the questions answered by the same model in both runs: 14/35 → 28/35.'
+    context: All 50 questions, same model-mix caveat
+proof:
+  label: User isolation
+  text: Each browser session gets its own ID, file and index, and tools are built per request. A pytest runs 10 users in parallel on one shared pandas worker and checks that each sees only its own data.
+metricsNote: 'One run each: baseline 20 Nov 2026, after 22 Nov 2026, same questions and scorer.'
+resume:
+  subtitle: Agentic RAG for PDF and CSV
+  stack: Python, FastAPI, FAISS, BM25, Jina, pandas, React
+  bullets:
+    - Built hybrid BM25 + FAISS retrieval with reranking for PDFs, and a resource-limited sandbox for LLM-written pandas code on CSVs.
+    - 'Designed a 50-question behavior eval (unanswerable, false-premise, off-topic, prompt injection). Correct behavior on the same model in both runs: {{Correct behavior, same model in both runs}}. Across all 50 questions: {{Correct behavior, all 50 questions}}, with a changed model mix.'
+    - 'Added a reviewer step and cheap rule-based checks: LLM calls per correct answer {{LLM calls per correct answer}}.'
+    - Debugged CSV accuracy on a 15-question set from 20% to 87% by finding data and harness bugs, not by changing the model.
+    - Isolated each user's session, file and index; a pytest runs 10 parallel users on one shared worker and checks none sees another's data. 163 pytest tests in CI.
 ---
 
 ## Problem
@@ -82,6 +97,8 @@ Every LLM call goes through [LLM Gateway](/projects/llm-gateway), which makes Qu
 The gain came from cheap checks and targeted prompt rules, not a bigger model. The eval caught the skip rule shipping "26 speakers", the count of the class column, for a question the data cannot answer. The rule is now blocked when a question makes its own claim or uses words that appear nowhere in the schema.
 
 ## Results
+
+The cleanest comparison is the same model in both runs. On the 35 questions answered only by gpt-oss-20b, correct behavior went from 14/35 to 28/35. The full table below covers all 50 questions, where the model mix changed between runs.
 
 | Category         | Baseline  | After     |
 | ---------------- | --------- | --------- |

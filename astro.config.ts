@@ -5,10 +5,9 @@ import { defineConfig } from 'astro/config';
 import staleNow from './src/integrations/stale-now';
 import { shikiThemes, titleTransformer } from './src/lib/shiki';
 
-// SITE_URL wins (set it once there is a custom domain). On Vercel the production URL is
-// provided automatically. Locally the site falls back to localhost.
-const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-const site = process.env.SITE_URL ?? (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:4321');
+// The production address. Canonical links, Open Graph tags, RSS, the sitemap and the resume all
+// come from this one value. SITE_URL overrides it, for example once there is a custom domain.
+const site = process.env.SITE_URL ?? 'https://richa-kaplesh.vercel.app';
 
 export default defineConfig({
   site,

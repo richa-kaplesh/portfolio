@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "astro check --minimumFailingSeverity warning && npm run lint && npm run format:check",
-    "test": "node --test \"tests/*.test.ts\""
+    "test": "node --test \"tests/*.test.ts\"",
+    "resume": "astro build && node scripts/resume-pdf.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.6",
@@ -49,6 +50,7 @@
     "prettier": "^3.10.1",
     "prettier-plugin-astro": "^1.1.2",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "puppeteer-core": "^25.19.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.74.0"
   },

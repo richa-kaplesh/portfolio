@@ -27,7 +27,7 @@ const tipId = `status-${id}`;
     <span class="sr-only">
       {href ? `Open ${project}. Backend status: ` : `${project} backend: `}
     </span>
-    <span data-label>not checked</span>
+    <span data-label>checking</span>
   </Tag>
   <button
     type="button"
@@ -105,7 +105,7 @@ const tipId = `status-${id}`;
     left: 0;
     z-index: 5;
     width: max-content;
-    max-width: min(21rem, calc(100vw - 2.5rem));
+    max-width: min(21rem, calc(100vw - 4.5rem));
     margin-top: 0.4rem;
     padding: 0.85rem 1rem;
     border: 1px solid var(--soft);

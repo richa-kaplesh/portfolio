@@ -1,0 +1,253 @@
+---
+/**
+ * The resume, built from the same content files as the site. `npm run resume` prints this page to
+ * public/resume.pdf. Project bullets take their numbers from each project's metrics, through
+ * {{Metric label}}, so the resume and the site always show the same values.
+ */
+import '@fontsource/source-sans-3/latin-400.css';
+import '@fontsource/source-sans-3/latin-600.css';
+import { getCollection } from 'astro:content';
+import { expandMetrics, getProjects, getSite } from '@/lib/content';
+
+const site = await getSite();
+const experience = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
+const work = experience.filter((e) => e.data.kind === 'work');
+const education = experience.filter((e) => e.data.kind === 'education');
+const projects = (await getProjects()).filter((p) => p.data.resume);
+const portfolio = new URL('/', Astro.site);
+const dates = (d: { start?: string; end?: string; current: boolean }) =>
+  `${d.start ?? ''} – ${d.current ? 'Present' : (d.end ?? '')}`;
+const links = [
+  site.email && { href: `mailto:${site.email}`, text: site.email },
+  { href: portfolio.href, text: portfolio.host },
+  { href: site.github, text: 'GitHub' },
+  site.linkedin && { href: site.linkedin, text: 'LinkedIn' },
+].filter((link) => !!link);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{`${site.name}: resume`}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <main class="sheet">
+      <header>
+        <h1>{site.name}</h1>
+        <p class="contact">
+          {links.map((link, i) => (
+            <>
+              {i > 0 && <span aria-hidden="true">{' | '}</span>}
+              <a href={link.href}>{link.text}</a>
+            </>
+          ))}
+        </p>
+      </header>
+
+      {site.resumeSummary && (
+        <section>
+          <h2>Summary</h2>
+          <p>{site.resumeSummary}</p>
+        </section>
+      )}
+
+      <section>
+        <h2>Skills</h2>
+        {site.skills.map(({ group, items }) => (
+          <p class="skills">
+            <b>{group}:</b> {items.join(', ')}
+          </p>
+        ))}
+      </section>
+
+      <section>
+        <h2>Experience</h2>
+        {work.map(({ data }) => (
+          <div class="entry">
+            <p class="row">
+              <b>
+                {data.role}, {data.org}
+              </b>
+              <span>{dates(data)}</span>
+            </p>
+            <ul>
+              {data.highlights.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section>
+        <h2>Projects</h2>
+        {projects.map(({ id, data }) => {
+          const resume = data.resume!;
+          const bullets = resume.bullets.map((b) => expandMetrics(b, data.metrics, id));
+          return resume.bullets.length > 1 ? (
+            <div class="entry">
+              <p>
+                <a class="project" href={new URL(`/projects/${id}`, Astro.site).href}>
+                  {data.title}
+                </a>
+                {resume.subtitle && ` – ${resume.subtitle}`}
+                {data.liveUrl && (
+                  <>
+                    {' '}
+                    <a href={data.liveUrl}>[Live]</a>
+                  </>
+                )}
+              </p>
+              {resume.stack && <p class="stack">{resume.stack}</p>}
+              <ul>
+                {bullets.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p class="entry">
+              <a class="project" href={new URL(`/projects/${id}`, Astro.site).href}>
+                {data.title}
+              </a>
+              {` – ${bullets[0]}`}
+            </p>
+          );
+        })}
+      </section>
+
+      <section>
+        <h2>Education</h2>
+        {education.map(({ data }) => (
+          <p class="row">
+            <b>
+              {data.role}, {data.org}
+            </b>
+            <span>
+              {data.start} – {data.end}
+              {data.note && ` | ${data.note}`}
+            </span>
+          </p>
+        ))}
+      </section>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  @page {
+    size: A4;
+    margin: 10mm 12mm;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    background: #e9e6e8;
+  }
+  body {
+    font:
+      400 9.9pt/1.32 'Source Sans 3',
+      'Segoe UI',
+      Arial,
+      sans-serif;
+    color: #111;
+  }
+  .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 24px auto;
+    padding: 10mm 12mm;
+    background: #fff;
+  }
+  header {
+    text-align: center;
+  }
+  h1 {
+    font-size: 20pt;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .contact {
+    margin-top: 2pt;
+  }
+  a {
+    color: #1a4fa0;
+    text-decoration: none;
+  }
+  h2 {
+    margin-top: 7.5pt;
+    padding-bottom: 1.5pt;
+    border-bottom: 0.8pt solid #111;
+    font-size: 11pt;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  section > p,
+  .entry {
+    margin-top: 3pt;
+  }
+  .skills {
+    margin-top: 1.5pt;
+  }
+  b,
+  .project {
+    font-weight: 600;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12pt;
+  }
+  .row span {
+    white-space: nowrap;
+  }
+  .stack {
+    color: #444;
+    font-size: 9.4pt;
+  }
+  ul {
+    margin-top: 1pt;
+    padding-left: 13pt;
+  }
+  li + li {
+    margin-top: 1pt;
+  }
+  /* On screen, links are underlined so they do not rely on color alone. The PDF keeps them plain. */
+  @media screen {
+    main a {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  }
+  @media print {
+    html {
+      background: none;
+    }
+    .sheet {
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+    }
+  }
+  @media (max-width: 820px) {
+    .sheet {
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 16px;
+    }
+    .row {
+      flex-wrap: wrap;
+      gap: 0 12pt;
+    }
+  }
+</style>

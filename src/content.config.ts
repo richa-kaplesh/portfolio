@@ -34,6 +34,16 @@ const projects = defineCollection({
         )
         .default([]),
       metricsNote: z.string().optional(),
+      /** A one-line description of a property that is verified by a test, not a number. */
+      proof: z.object({ label: z.string(), text: z.string() }).optional(),
+      /** Resume entry. {{Metric label}} inserts that metric as "before → after", so the two never disagree. */
+      resume: z
+        .object({
+          subtitle: z.string().optional(),
+          stack: z.string().optional(),
+          bullets: z.array(z.string()).min(1),
+        })
+        .optional(),
       startDate: z.coerce.date().optional(),
       todos: z.array(z.string()).default([]),
     })
@@ -172,6 +182,7 @@ const site = defineCollection({
     photo: z.string().startsWith('/').optional(),
     bio: z.string().optional(),
     lookingFor: z.string().optional(),
+    resumeSummary: z.string().optional(),
     source: z.url().optional(),
     skills: z.array(z.object({ group: z.string(), items: z.array(z.string()).min(1) })).default([]),
   }),

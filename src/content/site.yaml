@@ -7,6 +7,7 @@ main:
   description: Richa Kaplesh builds and evaluates LLM systems, with measured results.
   bio: I build and evaluate LLM systems, from RAG and tool-calling agents to the evals, tracing and tests around them. I like work where the result can be measured, so most of my projects end with a before-and-after number. I have a B.Tech in Artificial Intelligence & Machine Learning.
   lookingFor: applied AI and LLM engineering roles, in India first and open to roles abroad with visa sponsorship later.
+  resumeSummary: AI/ML Engineer (B.Tech AI & ML, CGPA 8.5) who builds and evaluates LLM systems, from RAG and tool-calling agents to the evals, tracing and tests around them. Seeking applied AI engineering roles.
   github: https://github.com/richa-kaplesh
   email: kapleshricha@gmail.com
   linkedin: https://www.linkedin.com/in/richa-kaplesh-5b66a726a
@@ -23,10 +24,10 @@ main:
         - LLM evaluation
         - Sandboxed code execution
     - group: Machine learning
-      items: [scikit-learn, NumPy, Feature engineering, Classification, Backpropagation]
+      items: [scikit-learn, NumPy, Feature engineering, Classification]
     - group: Languages
-      items: [Python, SQL, TypeScript, Elixir (basic)]
+      items: [Python, SQL, TypeScript]
     - group: Backend and data
       items: [FastAPI, REST APIs, PostgreSQL, Redis, pandas, OpenCV, PyMuPDF, Tesseract OCR, pytest]
     - group: Tools
-      items: [Docker, GitHub Actions CI/CD, Git, Linux, Grafana Loki]
+      items: [Docker, GitHub Actions CI/CD, Git, Linux]

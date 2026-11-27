@@ -6,6 +6,23 @@ interface Props {
   value: string;
 }
 const { value } = Astro.props;
+// [text](url) in a content string becomes a link. Everything else stays plain text.
+const parts = value.split(/(\[[^\]]+\]\([^)\s]+\))/).map((part) => {
+  const link = /^\[([^\]]+)\]\(([^)\s]+)\)$/.exec(part);
+  return link ? { text: link[1], href: link[2] } : { text: part };
+});
 ---
 
-{isTodo(value) ? <Todo text={value} /> : value}
+{isTodo(value) ? (
+  <Todo text={value} />
+) : (
+  parts.map((part) =>
+    part.href ? (
+      <a class="link" href={part.href}>
+        {part.text}
+      </a>
+    ) : (
+      part.text
+    ),
+  )
+)}

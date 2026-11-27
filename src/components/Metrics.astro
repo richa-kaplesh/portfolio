@@ -4,10 +4,11 @@ import type { CollectionEntry } from 'astro:content';
 interface Props {
   metrics: CollectionEntry<'projects'>['data']['metrics'];
   note?: string;
+  proof?: { label: string; text: string };
   /** Count from before to after when scrolled into view. */
   animate?: boolean;
 }
-const { metrics, note, animate = false } = Astro.props;
+const { metrics, note, proof, animate = false } = Astro.props;
 
 /** Only values with the same unit can count, such as 25.7 s and 0.99 s. */
 const counter = (before: string | undefined, after: string) => {
@@ -21,16 +22,16 @@ const counter = (before: string | undefined, after: string) => {
 };
 ---
 
-<dl class="grid">
+<dl class="@container grid">
   {metrics.map((m) => {
     const count = counter(m.before, m.after);
     return (
-      <div class="border-rule flex flex-wrap items-baseline gap-x-4 gap-y-0.5 border-b py-2.5 last:border-0">
-        <dt class="flex-[1_1_7rem] text-base leading-snug">
+      <div class="border-rule grid items-baseline gap-x-4 gap-y-1 border-b py-2.5 last:border-0 @sm:grid-cols-[minmax(0,1fr)_auto]">
+        <dt class="text-base leading-snug">
           {m.label}
           {m.context && <span class="text-soft block text-[0.9375rem]">{m.context}</span>}
         </dt>
-        <dd class="ml-auto text-right font-mono text-base whitespace-nowrap">
+        <dd class="font-mono text-base whitespace-nowrap @sm:text-right">
           {m.before && (
             <>
               <span class="sr-only">from </span>
@@ -67,6 +68,11 @@ const counter = (before: string | undefined, after: string) => {
     );
   })}
 </dl>
+{proof && (
+  <p class="border-rule border-t pt-2.5 text-base leading-snug">
+    <span class="font-semibold">{proof.label}.</span> {proof.text}
+  </p>
+)}
 {note && <p class="text-soft mt-3 text-[0.9375rem] leading-snug">{note}</p>}
 
 <script>
