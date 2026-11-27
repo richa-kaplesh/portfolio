@@ -1,0 +1,19 @@
+---
+import Base from '@/layouts/Base.astro';
+---
+
+<Base title="Page not found" noindex>
+  <div class="grid max-w-2xl gap-5">
+    <p class="meta">404</p>
+    <h1 class="text-4xl sm:text-5xl">This route got rate-limited.</h1>
+    <p class="text-xl">There is no page at this address. Fail over to one that has capacity.</p>
+    <p class="flex flex-wrap gap-3">
+      <a class="button button-solid" href="/">
+        Home
+      </a>
+      <a class="button" href="/projects">
+        Projects
+      </a>
+    </p>
+  </div>
+</Base>

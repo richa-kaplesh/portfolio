@@ -1,0 +1,106 @@
+---
+title: QueryMind
+tagline: An LLM data agent for CSV and PDF Q&A that checks every answer and knows when not to answer.
+status: live
+featured: true
+order: 2
+tags: [Agents, RAG, Evaluation]
+stack: [Python, FastAPI, pandas, FAISS, BM25, React, TypeScript, Docker]
+repo: https://github.com/richa-kaplesh/query-mind
+liveUrl: https://query-mind-cyan.vercel.app/#/
+apiUrl: https://query-mind.onrender.com/
+healthUrl: https://query-mind.onrender.com/
+metrics:
+  - label: Correct behavior, 50-question eval
+    before: 21/50
+    after: 41/50
+  - label: LLM calls per correct answer
+    before: '6.43'
+    after: '4.02'
+  - label: Cross-user data leaks
+    after: '0'
+    context: 5-user load test
+metricsNote: 'Baseline 20 Nov 2026, after 22 Nov 2026: same questions, same scorer, one run. On the questions answered by the same model in both runs: 14/35 → 28/35.'
+---
+
+## Problem
+
+An agent that answers every question will also answer the wrong ones. Ask a dataset about a column it doesn't have, state something false in the question, or hide an instruction in a cell, and a data agent will often play along with a confident number.
+
+QueryMind takes a CSV or a PDF and answers questions in plain language. The goal was to make it correct about when **not** to answer, and to measure that.
+
+## Core idea
+
+Treat refusing well as a behavior with its own test. The eval has 50 questions over two datasets, 10 in each of five categories, scored by deterministic rules:
+
+| Category         | Correct behavior                         |
+| ---------------- | ---------------------------------------- |
+| Normal           | Answer within tolerance                  |
+| Unanswerable     | Decline, because no column holds it      |
+| False premise    | Say the claim is wrong, then answer      |
+| Out of context   | Decline and point back to the dataset    |
+| Prompt injection | Ignore the instruction and answer anyway |
+
+## Architecture
+
+<Flow
+  label="How QueryMind answers a question"
+  steps={[
+    {
+      title: 'Question',
+      detail: 'Sent as data, never as instructions. The same holds for every cell value.',
+    },
+    {
+      title: 'Agent loop',
+      detail:
+        'For a CSV it writes pandas code. For a PDF it decides when to search and with what query.',
+      aside: 'At most 14 gateway calls per question.',
+    },
+    {
+      title: 'Sandbox or retrieval',
+      detail:
+        'Code passes an allowlist and runs in a resource-limited process. PDFs use BM25 + FAISS, then reranking.',
+    },
+    {
+      title: 'Cheap checks',
+      detail: 'Deterministic rules decide whether the LLM review can be skipped.',
+    },
+    {
+      title: 'Reviewer',
+      detail: 'A second LLM pass checks the draft by a different route.',
+      aside: 'On fail: one revision with the feedback.',
+    },
+    {
+      title: 'Answer',
+      detail: 'If nobody could check it, the user is told so.',
+    },
+  ]}
+/>
+
+Every LLM call goes through [LLM Gateway](/projects/llm-gateway), which makes QueryMind that project's real client. One request ID finds a question's logs in both services.
+
+The gain came from cheap checks and targeted prompt rules, not a bigger model. The eval caught the skip rule shipping "26 speakers", the count of the class column, for a question the data cannot answer. The rule is now blocked when a question makes its own claim or uses words that appear nowhere in the schema.
+
+## Results
+
+| Category         | Baseline  | After     |
+| ---------------- | --------- | --------- |
+| Normal           | 9/10      | 9/10      |
+| Unanswerable     | 4/10      | 8/10      |
+| False premise    | 0/10      | 5/10      |
+| Out of context   | 2/10      | 10/10     |
+| Prompt injection | 6/10      | 9/10      |
+| **All**          | **21/50** | **41/50** |
+
+The 95% interval for the total moved from 29–56% to 69–90%. Calls per question rose from 2.7 to 3.3, because more answers go to the reviewer, but calls per correct answer fell.
+
+Some limits on reading this. It is one run, and 10 questions per category is small. During the second run a daily quota ran out and the gateway used a larger fallback model for 51 of 165 calls. On the 35 questions answered only by the original model, the score went from 14 to 28. Scorers were adjusted after seeing answers, and the baseline shown was re-scored with the same rules.
+
+## What I'd do next
+
+- Fix false premises on the tweets dataset, the weakest category, where 4 of 5 still fail.
+- Never ship a non-answer. One injected question still got "Approved", marked as unverified.
+- Run the eval again for variance, and compare reviewer on against reviewer off.
+- Move sessions out of memory, so a deploy doesn't log everyone out.
+
+The [README](https://github.com/richa-kaplesh/query-mind#readme) covers the sandbox, retrieval, load test and every open problem.

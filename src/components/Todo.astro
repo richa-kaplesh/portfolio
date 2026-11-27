@@ -1,0 +1,11 @@
+---
+import { showTodos } from '@/lib/content';
+
+interface Props {
+  text: string;
+}
+const { text } = Astro.props;
+---
+
+{/* Placeholders show while developing. The live site never shows them; see TODO.md. */}
+{showTodos && <span class="todo">TODO(richa): {text.replace(/^TODO\(richa\):\s*/, '')}</span>}

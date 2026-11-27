@@ -1,0 +1,70 @@
+---
+interface Props {
+  /** Query-string name, so a filtered view can be shared. */
+  param: string;
+  label: string;
+  noun: string;
+  options: { value: string; label: string }[];
+  total: number;
+}
+const { param, label, noun, options, total } = Astro.props;
+---
+
+{/* Hidden without JavaScript: every item is then simply visible. */}
+<div class="filter-bar js-only mt-6 grid gap-2" data-param={param} data-noun={noun}>
+  <div class="flex flex-wrap gap-2" role="group" aria-label={label}>
+    <button type="button" class="filter button" data-value="" aria-pressed="true">
+      All
+    </button>
+    {options.map((option) => (
+      <button type="button" class="filter button" data-value={option.value} aria-pressed="false">
+        {option.label}
+      </button>
+    ))}
+  </div>
+  <p class="meta" aria-live="polite">{`${total} of ${total} ${noun}`}</p>
+</div>
+
+<style>
+  .filter {
+    cursor: pointer;
+  }
+  .filter[aria-pressed='true'] {
+    background: var(--accent);
+    color: var(--paper);
+  }
+</style>
+
+<script>
+  for (const bar of document.querySelectorAll<HTMLElement>('.filter-bar')) {
+    const { param = 'filter', noun = 'items' } = bar.dataset;
+    const buttons = [...bar.querySelectorAll<HTMLButtonElement>('.filter')];
+    const items = [...document.querySelectorAll<HTMLElement>('[data-filter]')];
+    const count = bar.querySelector('p');
+
+    const apply = (value: string) => {
+      let shown = 0;
+      for (const item of items) {
+        const match = !value || (item.dataset.filter ?? '').split('|').includes(value);
+        item.hidden = !match;
+        if (match) shown += 1;
+      }
+      for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.value === value));
+      if (count) count.textContent = `${shown} of ${items.length} ${noun}`;
+    };
+
+    for (const b of buttons) {
+      b.addEventListener('click', () => {
+        const value = b.dataset.value ?? '';
+        const url = new URL(location.href);
+        if (value) url.searchParams.set(param, value);
+        else url.searchParams.delete(param);
+        history.replaceState(null, '', url);
+        apply(value);
+      });
+    }
+
+    const initial = new URLSearchParams(location.search).get(param) ?? '';
+    apply(buttons.some((b) => b.dataset.value === initial) ? initial : '');
+  }
+</script>

@@ -1,0 +1,37 @@
+---
+import FilterBar from '@/components/FilterBar.astro';
+import Text from '@/components/Text.astro';
+import Base from '@/layouts/Base.astro';
+import { formatDate, getPosts, isoDate, kindLabel, minutes, uniqueTags } from '@/lib/content';
+
+const posts = await getPosts();
+const tags = uniqueTags(posts);
+---
+
+<Base title="Blog" description="Notes on building LLM systems and learning in the open.">
+  <h1 class="text-4xl sm:text-5xl">Blog</h1>
+  {posts.length === 0 && <p class="mt-6">No posts are published yet.</p>}
+  {tags.length > 0 && (
+    <FilterBar param="tag" label="Filter by tag" noun="posts" options={tags} total={posts.length} />
+  )}
+  <ul class="mt-8 grid">
+    {posts.map((post) => (
+      <li class="border-rule grid gap-2 border-t py-7" data-filter={post.data.tags.join('|')}>
+        <h2 class="text-2xl">
+          <a class="hover:text-accent" href={`/blog/${post.id}`}>
+            {post.data.title}
+          </a>
+        </h2>
+        <p class="meta">
+          <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
+          {`, ${kindLabel[post.data.kind]}, ${minutes(post.body)} min read`}
+          {post.data.draft && ', draft'}
+        </p>
+        <p class="max-w-2xl">
+          <Text value={post.data.summary} />
+        </p>
+        {post.data.tags.length > 0 && <p class="meta">{post.data.tags.join(', ')}</p>}
+      </li>
+    ))}
+  </ul>
+</Base>

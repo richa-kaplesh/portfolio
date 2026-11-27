@@ -1,0 +1,11 @@
+---
+import { isTodo } from '@/lib/content';
+import Todo from './Todo.astro';
+
+interface Props {
+  value: string;
+}
+const { value } = Astro.props;
+---
+
+{isTodo(value) ? <Todo text={value} /> : value}

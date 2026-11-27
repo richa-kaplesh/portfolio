@@ -1,0 +1,12 @@
+---
+const { 'data-title': title, ...rest } = Astro.props as Record<string, string | undefined>;
+---
+
+{title ? (
+  <figure class="code-figure">
+    <figcaption class="meta">{title}</figcaption>
+    <pre {...rest}><slot /></pre>
+  </figure>
+) : (
+  <pre {...rest}><slot /></pre>
+)}

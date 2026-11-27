@@ -1,0 +1,73 @@
+---
+import { render } from 'astro:content';
+import { mdxComponents } from '@/components/mdx';
+import Base from '@/layouts/Base.astro';
+import { formatDate, getPosts, isoDate, isTodo, kindLabel, minutes } from '@/lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { data } = post;
+const { Content } = await render(post);
+---
+
+<Base
+  title={data.title}
+  description={isTodo(data.summary) ? undefined : data.summary}
+  type="article"
+  noindex={data.draft}
+>
+  <article>
+    <header class="grid max-w-3xl gap-4">
+      <p class="meta">
+        <a class="link" href="/blog">
+          Blog
+        </a>
+        {` / ${kindLabel[data.kind]}`}
+      </p>
+      <h1 class="text-4xl sm:text-5xl">{data.title}</h1>
+      <p class="meta">
+        <time datetime={isoDate(data.date)}>{formatDate(data.date)}</time>
+        {`, ${minutes(post.body)} min read`}
+      </p>
+      {data.draft && (
+        <p>
+          <span class="todo">Draft: visible in development only</span>
+        </p>
+      )}
+    </header>
+    <div class="prose mt-10">
+      <Content components={mdxComponents} />
+    </div>
+  </article>
+  {(newer || older) && (
+    <nav class="border-rule mt-16 grid gap-6 border-t pt-6 sm:grid-cols-2" aria-label="More posts">
+      <p>
+        {older && (
+          <>
+            <span class="meta block">Previous</span>
+            <a class="link" href={`/blog/${older.id}`}>
+              {older.data.title}
+            </a>
+          </>
+        )}
+      </p>
+      <p class="sm:text-right">
+        {newer && (
+          <>
+            <span class="meta block">Next</span>
+            <a class="link" href={`/blog/${newer.id}`}>
+              {newer.data.title}
+            </a>
+          </>
+        )}
+      </p>
+    </nav>
+  )}
+</Base>

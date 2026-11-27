@@ -1,0 +1,13 @@
+---
+interface Props {
+  title?: string;
+}
+const { title = 'Note' } = Astro.props;
+---
+
+<aside class="panel my-6 p-5" aria-label={title}>
+  <p class="font-semibold">{title}</p>
+  <div class="mt-1 [&>*+p]:mt-3">
+    <slot />
+  </div>
+</aside>

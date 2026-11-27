@@ -1,0 +1,76 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  metrics: CollectionEntry<'projects'>['data']['metrics'];
+  note?: string;
+  /** Count from before to after when scrolled into view. */
+  animate?: boolean;
+}
+const { metrics, note, animate = false } = Astro.props;
+
+/** Only values with the same unit can count, such as 25.7 s and 0.99 s. */
+const counter = (before: string | undefined, after: string) => {
+  const parse = (text: string) => /^(\d+(?:\.(\d+))?)(.*)$/.exec(text);
+  const from = before ? parse(before) : null;
+  const to = parse(after);
+  if (!animate || !from || !to || from[3] !== to[3]) return undefined;
+  const decimals = to[2]?.length ?? 0;
+  const widest = `${Number(from[1]).toFixed(decimals)}${from[3]}`.length;
+  return { from: from[1], to: to[1], suffix: to[3], decimals, width: widest };
+};
+---
+
+<dl class="grid">
+  {metrics.map((m) => {
+    const count = counter(m.before, m.after);
+    return (
+      <div class="border-rule flex flex-wrap items-baseline gap-x-4 gap-y-0.5 border-b py-2.5 last:border-0">
+        <dt class="flex-[1_1_7rem] text-base leading-snug">
+          {m.label}
+          {m.context && <span class="text-soft block text-[0.9375rem]">{m.context}</span>}
+        </dt>
+        <dd class="ml-auto text-right font-mono text-base whitespace-nowrap">
+          {m.before && (
+            <>
+              <span class="sr-only">from </span>
+              <span class="text-soft">{m.before}</span>
+              <span class="text-soft" aria-hidden="true">
+                {' → '}
+              </span>
+              <span class="sr-only"> to </span>
+            </>
+          )}
+          <strong class="text-accent font-semibold">
+            {count ? (
+              <>
+                <span class="sr-only">{m.after}</span>
+                <span
+                  class="inline-block"
+                  aria-hidden="true"
+                  style={`min-width:${count.width}ch`}
+                  data-count
+                  data-from={count.from}
+                  data-to={count.to}
+                  data-suffix={count.suffix}
+                  data-decimals={count.decimals}
+                >
+                  {m.after}
+                </span>
+              </>
+            ) : (
+              m.after
+            )}
+          </strong>
+        </dd>
+      </div>
+    );
+  })}
+</dl>
+{note && <p class="text-soft mt-3 text-[0.9375rem] leading-snug">{note}</p>}
+
+<script>
+  import { startCounters } from '@/islands/counters';
+
+  startCounters();
+</script>

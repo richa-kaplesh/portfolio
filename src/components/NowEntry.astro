@@ -1,0 +1,41 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { formatDate, isoDate, real } from '@/lib/content';
+import Text from './Text.astro';
+
+interface Props {
+  entry: CollectionEntry<'now'>;
+}
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+const groups = [
+  { heading: 'Building', items: real(data.building) },
+  { heading: 'Learning', items: real(data.learning) },
+  { heading: 'Reading', items: real(data.reading ?? []) },
+  { heading: 'Goals', items: real(data.goals) },
+].filter((group) => group.items.length > 0);
+---
+
+<p class="meta mt-4">
+  As of <time datetime={isoDate(data.date)}>{formatDate(data.date)}</time>
+</p>
+<div class="mt-10 grid gap-10 sm:grid-cols-2">
+  {groups.map(({ heading, items }) => (
+    <section>
+      <h2 class="text-2xl">{heading}</h2>
+      <ul class="mt-3 grid list-disc gap-1.5 pl-5">
+        {items.map((item) => (
+          <li>
+            <Text value={item} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</div>
+{entry.body?.trim() && (
+  <div class="prose mt-10">
+    <Content />
+  </div>
+)}

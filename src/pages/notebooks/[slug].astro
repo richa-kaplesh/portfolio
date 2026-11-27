@@ -1,0 +1,74 @@
+---
+import 'katex/dist/katex.min.css';
+import '@/styles/notebook.css';
+import Base from '@/layouts/Base.astro';
+import { formatDate, getNotebooks, isoDate } from '@/lib/content';
+import { renderNotebook } from '@/lib/notebook';
+
+export async function getStaticPaths() {
+  const notebooks = await getNotebooks();
+  return notebooks.map((notebook) => ({ params: { slug: notebook.id }, props: { notebook } }));
+}
+
+const files = import.meta.glob<string>('/src/content/notebooks/*.ipynb', {
+  query: '?raw',
+  import: 'default',
+});
+const { notebook } = Astro.props;
+const { data } = notebook;
+const load = files[`/src/content/notebooks/${notebook.id}.ipynb`];
+if (!load) throw new Error(`${notebook.id}.ipynb is missing from src/content/notebooks.`);
+const { html, headings } = await renderNotebook(await load(), notebook.id);
+const toc = headings.filter((h) => h.depth <= 3);
+---
+
+<Base title={data.title} description={data.summary} type="article">
+  <article>
+    <header class="grid max-w-3xl gap-4">
+      <p class="meta">
+        <a class="link" href="/notebooks">
+          Notebooks
+        </a>
+        {` / ${data.topic}`}
+      </p>
+      <h1 class="text-4xl sm:text-5xl">{data.title}</h1>
+      <p class="text-xl leading-normal">{data.summary}</p>
+      <p class="meta">
+        <time datetime={isoDate(data.date)}>{formatDate(data.date)}</time>
+      </p>
+      {(data.colabUrl || data.repoUrl) && (
+        <p class="flex flex-wrap gap-3">
+          {data.colabUrl && (
+            <a class="button" href={data.colabUrl}>
+              Open in Colab
+            </a>
+          )}
+          {data.repoUrl && (
+            <a class="button" href={data.repoUrl}>
+              View on GitHub
+            </a>
+          )}
+        </p>
+      )}
+    </header>
+    <div class="mt-10 grid grid-cols-[minmax(0,1fr)] gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,44rem)_minmax(0,1fr)]">
+      {toc.length > 0 && (
+        <nav class="lg:sticky lg:top-8 lg:order-2 lg:self-start" aria-labelledby="toc">
+          <h2 class="text-xl" id="toc">
+            On this page
+          </h2>
+          <ol class="mt-2 grid">
+            {toc.map((h) => (
+              <li class:list={[h.depth === 3 && 'pl-4']}>
+                <a class="link inline-block py-1 text-base" href={`#nb-${h.id}`}>
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+      <div class="notebook" set:html={html} />
+    </div>
+  </article>
+</Base>

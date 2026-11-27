@@ -1,0 +1,23 @@
+---
+title: RAG From Scratch
+tagline: 'The full RAG pipeline without LangChain: extract, chunk, embed, store, retrieve, generate.'
+status: archived
+order: 4
+tags: [RAG]
+stack: [Python, NumPy, PyMuPDF, sentence-transformers, Streamlit]
+repo: https://github.com/richa-kaplesh/rag-from-scratch
+todos:
+  - 'confirm the status: marked archived because there is no live URL'
+---
+
+## What it does
+
+Upload a PDF and ask questions about it. Each stage of the pipeline is its own small Python file, so every step can be read and changed.
+
+## Choices worth noting
+
+Text is extracted page by page, so an answer can point back to the page it came from. Chunks are 500 characters with 50 of overlap, which keeps a sentence at a boundary whole in at least one chunk.
+
+Vector search is cosine similarity written in NumPy. Embeddings come from all-MiniLM-L6-v2 and answers from Llama 3.1 8B on Groq.
+
+The [README](https://github.com/richa-kaplesh/rag-from-scratch#readme) explains the reason behind each file.

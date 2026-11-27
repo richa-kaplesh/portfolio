@@ -1,0 +1,19 @@
+---
+title: Autograd Engine from Scratch
+tagline: A micrograd-style autograd engine and a small neural network module in plain Python.
+status: archived
+order: 6
+tags: [Machine learning, Deep learning]
+stack: [Python]
+repo: https://github.com/richa-kaplesh/autograd-engine-from-scratch
+todos:
+  - 'write a README: the repo has only a title'
+  - 'the test file prints values but asserts nothing; add assertions before calling them tests'
+  - 'confirm the status: marked archived because there is no live URL'
+---
+
+## What it does
+
+A `Value` object wraps a number and remembers how it was made. Calling `backward()` sorts the graph topologically and applies the chain rule from the output back to every input.
+
+On top of it sits a small neural network module with neurons, layers and a multi-layer perceptron. It follows the design of micrograd. A sanity-check script runs both parts.

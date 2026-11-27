@@ -1,0 +1,35 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Metrics from './Metrics.astro';
+import ProjectLinks from './ProjectLinks.astro';
+import StatusPill from './StatusPill.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+const { project } = Astro.props;
+const { data } = project;
+---
+
+<article class="panel grid grid-rows-[auto_auto_1fr_auto] gap-5 p-5 sm:p-7">
+  <header class="grid gap-2">
+    <h3 class="text-[1.75rem]">
+      <a class="hover:text-accent" href={`/projects/${project.id}`}>
+        {data.title}
+      </a>
+    </h3>
+    <p class="leading-snug">{data.tagline}</p>
+  </header>
+  <div class="grid justify-items-start gap-2">
+    {data.healthUrl && (
+      <StatusPill id={project.id} project={data.title} url={data.healthUrl} href={data.liveUrl} />
+    )}
+    <ProjectLinks project={data} />
+  </div>
+  <div>
+    <Metrics metrics={data.metrics} note={data.metricsNote} animate />
+  </div>
+  <a class="link justify-self-start py-1" href={`/projects/${project.id}`}>
+    Read the {data.title} case study
+  </a>
+</article>

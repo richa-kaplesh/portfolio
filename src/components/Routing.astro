@@ -1,0 +1,144 @@
+---
+/** The hero scene. This markup is also the static fallback when JavaScript is off. */
+const keys = [35, 95, 155, 215].map((y, i) => ({ y, name: `key-${i + 1}` }));
+---
+
+<figure class="routing" id="routing">
+  <div class="scene" role="group" aria-label="Request routing demo">
+    <svg viewBox="0 0 420 250" aria-hidden="true">
+      <path class="line" d="M0 125H150"></path>
+      {keys.map(({ y }) => (
+        <path class="line" data-path d={`M150 125C215 125 225 ${y} 292 ${y}`} />
+      ))}
+      <g data-dots>
+        <circle class="dot" cx="34" cy="125" r="5"></circle>
+        <circle class="dot" cx="88" cy="125" r="5"></circle>
+        <circle class="dot" cx="219" cy="103" r="5"></circle>
+        <circle class="dot" cx="226" cy="178" r="5"></circle>
+      </g>
+      <circle class="gateway" cx="150" cy="125" r="13"></circle>
+      <text class="label" x="150" y="162" text-anchor="middle">
+        gateway
+      </text>
+      <text class="label" x="2" y="106">
+        requests
+      </text>
+    </svg>
+    {keys.map(({ y, name }) => (
+      <button
+        type="button"
+        class="key"
+        style={`top:${(y / 250) * 100}%`}
+        aria-pressed="false"
+        data-key={name}
+        disabled
+      >
+        <span>{name}</span>
+        <span data-state>ready</span>
+      </button>
+    ))}
+  </div>
+  <figcaption>
+    <span>When one key is rate-limited, traffic fails over to the others.</span>
+    <span class="js-only">Select a key to rate-limit it.</span>
+    <button type="button" class="link js-only" data-pause>
+      Pause animation
+    </button>
+  </figcaption>
+  <p class="sr-only" aria-live="polite" data-announce></p>
+</figure>
+
+<style>
+  .routing {
+    width: 100%;
+    max-width: 27rem;
+  }
+  .scene {
+    position: relative;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .line {
+    fill: none;
+    stroke: var(--rule);
+    stroke-width: 2;
+  }
+  .line:global(.limited) {
+    stroke: var(--alert);
+    stroke-dasharray: 2 7;
+    stroke-linecap: round;
+  }
+  .gateway {
+    fill: var(--paper);
+    stroke: var(--accent);
+    stroke-width: 3;
+  }
+  svg :global(.dot) {
+    fill: var(--accent);
+  }
+  svg :global(.dot.refused) {
+    fill: var(--alert);
+  }
+  .label {
+    fill: var(--soft);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .key {
+    position: absolute;
+    left: 69.5%;
+    width: 30.5%;
+    min-height: 2.75rem;
+    transform: translateY(-50%);
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    padding: 0.15rem 0.6rem;
+    background: var(--card);
+    border: 1px solid var(--soft);
+    border-radius: 3px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.3;
+  }
+  .key:not(:disabled) {
+    cursor: pointer;
+  }
+  .key:not(:disabled):hover {
+    border-color: var(--accent);
+  }
+  .key [data-state] {
+    color: var(--soft);
+  }
+  .key[aria-pressed='true'] {
+    border: 1px dashed var(--alert);
+  }
+  .key[aria-pressed='true'] [data-state] {
+    color: var(--alert);
+  }
+  figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.75rem;
+    margin-top: 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--soft);
+  }
+  [data-pause] {
+    cursor: pointer;
+    min-height: 1.75rem;
+  }
+</style>
+
+<script>
+  import { startRouting } from '@/islands/routing';
+
+  const root = document.querySelector<HTMLElement>('#routing');
+  if (root) startRouting(root);
+</script>

@@ -1,0 +1,18 @@
+---
+interface Props {
+  label: string;
+  after: string;
+  before?: string;
+  context?: string;
+}
+const { label, after, before, context } = Astro.props;
+---
+
+<figure class="border-rule my-8 border-y py-5">
+  <p class="text-accent font-mono text-4xl leading-tight font-semibold">{after}</p>
+  <figcaption class="mt-1">
+    {label}
+    {before && <span class="text-soft">{`, from ${before}`}</span>}
+    {context && <span class="text-soft block text-base">{context}</span>}
+  </figcaption>
+</figure>

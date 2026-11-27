@@ -1,0 +1,50 @@
+---
+import { getCollection } from 'astro:content';
+import Text from './Text.astro';
+import Todo from './Todo.astro';
+
+interface Props {
+  /** Compact: work only, one line per role. */
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const entries = (await getCollection('experience'))
+  .filter(({ data }) => !compact || data.kind === 'work')
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<ol class="grid max-w-4xl">
+  {entries.map(({ data }) => (
+    <li class="border-rule grid gap-1 border-t py-5 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8">
+      <p class="meta leading-relaxed">
+        {data.start ? (
+          <>
+            {data.start}
+            {` to ${data.current ? 'now' : (data.end ?? '')}`}
+          </>
+        ) : (
+          <Todo text="dates" />
+        )}
+      </p>
+      <div class="grid gap-1">
+        <h3 class="text-xl">
+          {data.role}
+          <span class="font-body text-soft text-lg">
+            {', '}
+            <Text value={data.org} />
+          </span>
+        </h3>
+        {data.note && <p class="text-soft">{data.note}</p>}
+        {compact
+          ? data.summary && <p class="max-w-3xl leading-snug">{data.summary}</p>
+          : data.highlights.length > 0 && (
+              <ul class="mt-1 grid max-w-3xl list-disc gap-1.5 pl-5 leading-snug">
+                {data.highlights.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            )}
+      </div>
+    </li>
+  ))}
+</ol>

@@ -1,0 +1,65 @@
+---
+import { getSite } from '@/lib/content';
+import Todo from './Todo.astro';
+
+const site = await getSite();
+---
+
+<div class="grid gap-5">
+  {site.lookingFor && <p class="max-w-2xl text-xl leading-normal">Looking for {site.lookingFor}</p>}
+  {site.email ? (
+    <div class="flex flex-wrap items-center gap-3">
+      <a class="button button-solid" href={`mailto:${site.email}`}>
+        Email me
+      </a>
+      <span class="font-mono text-base select-all">{site.email}</span>
+      <button type="button" class="link js-only min-h-11 cursor-pointer" data-copy={site.email}>
+        Copy
+      </button>
+    </div>
+  ) : (
+    <Todo text="email" />
+  )}
+  <ul class="flex flex-wrap gap-x-6 gap-y-1">
+    {site.resume ? (
+      <li>
+        <a class="link inline-block py-1" href={site.resume}>
+          Resume (PDF)
+        </a>
+      </li>
+    ) : (
+      <Todo text="resume PDF at /public/resume.pdf" />
+    )}
+    {site.linkedin ? (
+      <li>
+        <a class="link inline-block py-1" href={site.linkedin}>
+          LinkedIn
+        </a>
+      </li>
+    ) : (
+      <Todo text="LinkedIn URL" />
+    )}
+    <li>
+      <a class="link inline-block py-1" href={site.github}>
+        GitHub
+      </a>
+    </li>
+  </ul>
+</div>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy ?? '');
+        button.textContent = 'Copied';
+      } catch {
+        // Copying is blocked. The address is selectable, so select it for the visitor.
+        const text = button.previousElementSibling;
+        if (text) getSelection()?.selectAllChildren(text);
+        button.textContent = 'Press Ctrl C to copy';
+      }
+      setTimeout(() => (button.textContent = 'Copy'), 2500);
+    });
+  }
+</script>

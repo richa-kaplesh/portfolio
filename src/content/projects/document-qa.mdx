@@ -1,0 +1,24 @@
+---
+title: Document Q&A (RAG)
+tagline: Ask a PDF questions and see the source passages behind each answer.
+status: archived
+order: 5
+tags: [RAG]
+stack: [Python, LangChain, FAISS, Groq, FastAPI, React, TypeScript, Docker]
+repo: https://github.com/richa-kaplesh/document-qa
+todos:
+  - 'golden test dataset: the README describes one, but it is not in the repo, so it is not claimed here'
+  - 'confirm the status: marked archived because there is no live URL'
+---
+
+## What it does
+
+Upload a PDF, ask a question, and get an answer with the source chunks shown, so you can verify it.
+
+## How it works
+
+LangChain splits the document into 500-character chunks and embeds them with all-MiniLM-L6-v2. FAISS finds the three closest chunks to the question. Llama 3.3 70B on Groq answers from those chunks only.
+
+Everything tunable, including the model name, lives in one config file. When Groq retired a model, the fix was one line.
+
+The [README](https://github.com/richa-kaplesh/document-qa#readme) goes through the chain step by step.

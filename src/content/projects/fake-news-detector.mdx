@@ -1,0 +1,32 @@
+---
+title: Fake News Detector
+tagline: A headline classifier with an analysis dashboard, built through nine logged experiments on 22,866 articles.
+status: archived
+order: 3
+tags: [Machine learning]
+stack: [Python, scikit-learn, FastAPI, React, TypeScript]
+repo: https://github.com/richa-kaplesh/Fake-News-Detector
+metrics:
+  - label: Test accuracy
+    after: 90.96%
+  - label: Fake articles caught on the test set
+    after: 70.9%
+metricsNote: Gradient boosting on FakeNewsNet, held-out test set of 3,430 articles.
+todos:
+  - 'live URL (the README says Vercel and Railway, but gives no link)'
+  - 'confirm the status: marked archived because no live URL is known'
+---
+
+## What it does
+
+Paste a news headline and the model says whether it looks real or fake, with a confidence score. A dashboard shows which sources publish the most fake news.
+
+## How it was built
+
+The dataset is FakeNewsNet, 76% real and 24% fake. The baseline reached 83% accuracy but found only 46% of the fake articles, so accuracy alone was misleading.
+
+Adding the source domain raised fake recall to 74%. Standard text cleaning made results worse, because punctuation in headlines carries signal. Giving the model each source's share of fake articles raised fake recall to 79%.
+
+Six algorithms were then compared on a train, validation and test split. Gradient boosting had the best validation accuracy, 89.83%. Random forest came close but had memorised its training set.
+
+The [README](https://github.com/richa-kaplesh/Fake-News-Detector#readme) records every experiment, including the ones that failed.

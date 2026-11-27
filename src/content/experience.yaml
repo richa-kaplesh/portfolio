@@ -1,0 +1,31 @@
+# Newest first. kind: work | education
+- id: learnline
+  order: 1
+  kind: work
+  role: AI & Backend Engineer Intern
+  org: LearnLine AI (IntelGrader)
+  start: Oct 2026
+  current: true
+  summary: Speeding up and fixing the LLM grading pipeline for handwritten exam sheets. The red pen service now takes 11.0 s per sheet, down from 16.6 s.
+  highlights:
+    - Working on the LLM grading pipeline for handwritten exam sheets. I check graded sheets against the scanned pages and fix the code that loses marks the model awarded correctly.
+    - Sped up the red pen service that draws marks on answer sheets from 16.6 s to 11.0 s per sheet, and to 4.4 s for a redraw after a teacher edit, by reusing per-page image analysis and caching unchanged pages.
+- id: nokia
+  order: 2
+  kind: work
+  role: Frontend Development Intern
+  org: Nokia
+  start: Aug 2025
+  end: Jun 2026
+  summary: React, TypeScript and AG Grid dashboards, Apache Superset plugins, and FastAPI services for internal data products.
+  highlights:
+    - Built React, TypeScript and AG Grid dashboards and custom Apache Superset plugins for the UDAP Portal.
+    - Contributed FastAPI and REST services for a Data Product Catalog Explorer, working with PostgreSQL and Python.
+- id: btech
+  order: 3
+  kind: education
+  role: B.Tech, Artificial Intelligence & Machine Learning
+  org: CGC Landran
+  start: '2022'
+  end: '2026'
+  note: CGPA 8.5

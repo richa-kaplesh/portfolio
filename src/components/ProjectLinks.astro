@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>['data'];
+}
+const { project } = Astro.props;
+const links = [
+  project.liveUrl && { href: project.liveUrl, text: project.liveLabel },
+  project.apiUrl && { href: project.apiUrl, text: project.apiLabel },
+  { href: project.repo, text: 'Code' },
+].filter((l) => !!l);
+---
+
+<ul class="flex flex-wrap gap-x-5 gap-y-1">
+  {links.map((l) => (
+    <li>
+      <a class="link inline-block py-1" href={l.href}>
+        {l.text}
+        <span class="sr-only"> for {project.title}</span>
+      </a>
+    </li>
+  ))}
+</ul>

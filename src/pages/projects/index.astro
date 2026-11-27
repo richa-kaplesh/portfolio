@@ -1,0 +1,24 @@
+---
+import FilterBar from '@/components/FilterBar.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import Base from '@/layouts/Base.astro';
+import { getProjects, uniqueTags } from '@/lib/content';
+
+const projects = await getProjects();
+---
+
+<Base title="Projects" description="LLM infrastructure, data agents, RAG and machine learning.">
+  <h1 class="text-4xl sm:text-5xl">Projects</h1>
+  <FilterBar
+    param="tag"
+    label="Filter by tag"
+    noun="projects"
+    options={uniqueTags(projects)}
+    total={projects.length}
+  />
+  <ul class="mt-8 grid">
+    {projects.map((project) => (
+      <ProjectCard project={project} />
+    ))}
+  </ul>
+</Base>

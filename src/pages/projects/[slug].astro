@@ -1,0 +1,66 @@
+---
+import { render } from 'astro:content';
+import Metrics from '@/components/Metrics.astro';
+import ProjectLinks from '@/components/ProjectLinks.astro';
+import StatusPill from '@/components/StatusPill.astro';
+import Todo from '@/components/Todo.astro';
+import { mdxComponents } from '@/components/mdx';
+import Base from '@/layouts/Base.astro';
+import { getProjects, showTodos, statusLabel } from '@/lib/content';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+---
+
+<Base title={data.title} description={data.tagline} type="article">
+  <article>
+    <header class="grid max-w-3xl gap-4">
+      <p class="meta">
+        <a class="link" href="/projects">
+          Projects
+        </a>
+        {data.status === 'archived' ? '' : ` / ${statusLabel[data.status]}`}
+      </p>
+      <h1 class="text-4xl sm:text-5xl">{data.title}</h1>
+      <p class="text-xl leading-normal">{data.tagline}</p>
+      {data.healthUrl && <StatusPill id={project.id} project={data.title} url={data.healthUrl} href={data.liveUrl} />}
+      <ProjectLinks project={data} />
+      {showTodos && data.todos.length > 0 && (
+        <ul class="grid gap-1">
+          {data.todos.map((todo) => (
+            <li>
+              <Todo text={todo} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </header>
+    <div class="mt-10 grid grid-cols-[minmax(0,1fr)] gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)]">
+      <aside class="grid content-start gap-6 lg:order-2" aria-label="Project facts">
+        {data.metrics.length > 0 && (
+          <section class="panel p-5" aria-labelledby="at-a-glance">
+            <h2 class="mb-2 text-xl" id="at-a-glance">
+              At a glance
+            </h2>
+            <Metrics metrics={data.metrics} note={data.metricsNote} />
+          </section>
+        )}
+        <section aria-labelledby="stack">
+          <h2 class="text-xl" id="stack">
+            Stack
+          </h2>
+          <p class="meta mt-2 leading-relaxed">{data.stack.join(', ')}</p>
+        </section>
+      </aside>
+      <div class="prose [&>h2:first-of-type]:mt-0">
+        <Content components={mdxComponents} />
+      </div>
+    </div>
+  </article>
+</Base>

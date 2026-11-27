@@ -1,0 +1,35 @@
+---
+import Base from '@/layouts/Base.astro';
+import { formatDate, getNotebooks, isoDate } from '@/lib/content';
+
+const notebooks = await getNotebooks();
+const topics = [...new Set(notebooks.map((n) => n.data.topic))].sort();
+---
+
+<Base title="Notebooks" description="Notebooks from what I'm learning.">
+  <h1 class="text-4xl sm:text-5xl">Notebooks</h1>
+  {notebooks.length === 0 && <p class="mt-6">No notebooks are published yet.</p>}
+  {topics.map((topic) => (
+    <section class="mt-12">
+      <h2 class="text-2xl">{topic}</h2>
+      <ul class="mt-4 grid gap-4 sm:grid-cols-2">
+        {notebooks
+          .filter((n) => n.data.topic === topic)
+          .map((n) => (
+            <li class="panel grid content-start gap-2 p-5">
+              <h3 class="text-xl">
+                <a class="hover:text-accent" href={`/notebooks/${n.id}`}>
+                  {n.data.title}
+                </a>
+              </h3>
+              <p class="meta">
+                <time datetime={isoDate(n.data.date)}>{formatDate(n.data.date)}</time>
+              </p>
+              <p class="leading-snug">{n.data.summary}</p>
+              {n.data.tags.length > 0 && <p class="meta">{n.data.tags.join(', ')}</p>}
+            </li>
+          ))}
+      </ul>
+    </section>
+  ))}
+</Base>

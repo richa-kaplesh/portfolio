@@ -1,0 +1,26 @@
+---
+interface Props {
+  label: string;
+  steps: { title: string; detail: string; aside?: string }[];
+}
+const { label, steps } = Astro.props;
+---
+
+<figure class="not-prose my-8">
+  <ol class="relative grid gap-0">
+    {steps.map((step, i) => (
+      <li class="relative grid gap-x-6 gap-y-1 pb-7 pl-8 last:pb-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)]">
+        {i < steps.length - 1 && (
+          <span class="bg-rule absolute top-3 bottom-[-0.75rem] left-[0.4rem] w-0.5" />
+        )}
+        <span class="border-accent bg-paper absolute top-2 left-0 size-3.5 rounded-full border-2" />
+        <div>
+          <p class="font-display text-lg leading-tight">{step.title}</p>
+          <p class="mt-1 text-base leading-snug">{step.detail}</p>
+        </div>
+        {step.aside && <p class="meta self-center leading-snug">{step.aside}</p>}
+      </li>
+    ))}
+  </ol>
+  <figcaption class="text-soft mt-5 text-base">{label}</figcaption>
+</figure>

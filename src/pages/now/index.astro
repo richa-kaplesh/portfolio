@@ -1,0 +1,30 @@
+---
+import Heatmap from '@/components/Heatmap.astro';
+import NowEntry from '@/components/NowEntry.astro';
+import Base from '@/layouts/Base.astro';
+import { formatDate, getNowEntries } from '@/lib/content';
+
+const [current, ...older] = await getNowEntries();
+---
+
+<Base title="Now" description="What I'm working on and learning right now.">
+  <h1 class="text-4xl sm:text-5xl">Now</h1>
+  {current && <NowEntry entry={current} />}
+  <Heatmap />
+  {older.length > 0 && (
+    <section class="mt-16" aria-labelledby="earlier">
+      <h2 class="text-2xl" id="earlier">
+        Earlier
+      </h2>
+      <ul class="mt-3 grid gap-1">
+        {older.map((entry) => (
+          <li>
+            <a class="link inline-block py-1" href={`/now/${entry.id}`}>
+              What I was doing on {formatDate(entry.data.date)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</Base>

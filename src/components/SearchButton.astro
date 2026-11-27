@@ -1,0 +1,53 @@
+<button type="button" id="search" class="button search js-only" aria-haspopup="dialog">
+  Search
+  <kbd aria-hidden="true">Ctrl K</kbd>
+</button>
+
+<style>
+  .search {
+    cursor: pointer;
+    gap: 0.6rem;
+    padding-inline: 0.75rem;
+    border-color: var(--soft);
+    color: var(--ink);
+    font-size: 1rem;
+  }
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--soft);
+  }
+  .search:hover {
+    color: var(--paper);
+  }
+  .search:hover kbd {
+    color: inherit;
+  }
+  @media (hover: none) {
+    kbd {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('#search');
+
+  // The palette and React load the first time someone asks for it, never before.
+  const open = async () => {
+    const { openPalette } = await import('@/islands/palette');
+    await openPalette();
+  };
+
+  if (button) {
+    const key = button.querySelector('kbd');
+    if (key && /Mac|iPhone|iPad/.test(navigator.userAgent)) key.textContent = '⌘K';
+    button.addEventListener('click', () => void open());
+  }
+  addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
+    if (event.altKey || event.shiftKey) return;
+    event.preventDefault();
+    void open();
+  });
+</script>

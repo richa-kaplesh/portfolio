@@ -1,0 +1,111 @@
+---
+interface Props {
+  /** Unique on the page. */
+  id: string;
+  project: string;
+  /** The backend to check. */
+  url: string;
+  /** Where the pill leads: the live app. */
+  href?: string;
+}
+const { id, project, url, href } = Astro.props;
+const Tag = href ? 'a' : 'span';
+---
+
+<div class="status inline-flex items-center gap-1">
+  <Tag class="pill meta" href={href} data-health={url} data-state="unknown">
+    <span class="light" aria-hidden="true"></span>
+    <span class="sr-only">
+      {href ? `Open ${project}. Backend status: ` : `${project} backend: `}
+    </span>
+    <span data-label>not checked</span>
+  </Tag>
+  <button
+    type="button"
+    class="why"
+    popovertarget={`status-${id}`}
+    aria-label={`What the ${project} status means`}
+  >
+    ?
+  </button>
+  <div class="tip" id={`status-${id}`} popover>
+    <p>
+      This backend runs on Render's free tier, which sleeps when nobody is using it. The first
+      request wakes it, and that can take up to a minute. "Waking up" means it is starting now.
+    </p>
+  </div>
+</div>
+
+<style>
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--soft);
+    text-decoration: none;
+  }
+  a.pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .why {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    color: var(--soft);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .why:hover {
+    color: var(--accent);
+  }
+  .light {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    border: 2px solid var(--soft);
+  }
+  .pill[data-state='live'] .light {
+    border-color: var(--ok);
+    background: var(--ok);
+  }
+  .pill[data-state='waking'] .light {
+    border-color: var(--wait);
+    background: linear-gradient(90deg, var(--wait) 50%, transparent 50%);
+  }
+  .pill[data-state='offline'] .light {
+    border-color: var(--alert);
+    border-radius: 0;
+  }
+  .tip {
+    max-width: min(20rem, calc(100vw - 2rem));
+    margin: auto;
+    padding: 1rem;
+    border: 1px solid var(--soft);
+    border-radius: 3px;
+    background: var(--card);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  @supports (position-area: bottom) {
+    .tip {
+      position-area: bottom span-right;
+      position-try-fallbacks: flip-block, flip-inline;
+      margin: 0.4rem 0;
+    }
+  }
+</style>
+
+<script>
+  import { startStatus } from '@/islands/status';
+
+  startStatus();
+</script>

@@ -1,0 +1,132 @@
+---
+import Contact from '@/components/Contact.astro';
+import Experience from '@/components/Experience.astro';
+import FlagshipCard from '@/components/FlagshipCard.astro';
+import RelativeDate from '@/components/RelativeDate.astro';
+import Routing from '@/components/Routing.astro';
+import Text from '@/components/Text.astro';
+import Todo from '@/components/Todo.astro';
+import Base from '@/layouts/Base.astro';
+import {
+  formatDate,
+  getNowEntries,
+  getPosts,
+  getProjects,
+  getSite,
+  isoDate,
+  real,
+} from '@/lib/content';
+
+const site = await getSite();
+const featured = (await getProjects()).filter((p) => p.data.featured);
+const [now] = await getNowEntries();
+const posts = (await getPosts()).slice(0, 3);
+// Two things being built and one being learned.
+const nowItems = now
+  ? [...real(now.data.building).slice(0, 2), ...real(now.data.learning).slice(0, 1)]
+  : [];
+---
+
+<Base>
+  <div class="grid grid-cols-[minmax(0,1fr)] items-center gap-x-14 gap-y-12 lg:grid-cols-[minmax(0,1fr)_25rem]">
+    <section class="grid gap-5">
+      <p class="meta">{site.role}</p>
+      <h1 class="text-[2.25rem] sm:text-[3rem]">{site.headline}</h1>
+      <p class="max-w-2xl text-xl leading-normal">{site.currently}</p>
+      <div class="flex flex-wrap items-center gap-3">
+        <a class="button button-solid" href="#work">
+          See the work
+        </a>
+        {site.resume ? (
+          <a class="button" href={site.resume}>
+            Download resume
+          </a>
+        ) : (
+          <Todo text="resume PDF" />
+        )}
+        <a class="button" href="#contact">
+          Contact
+        </a>
+      </div>
+    </section>
+    <Routing />
+  </div>
+
+  <section class="mt-16 grid gap-6 sm:mt-24" id="work" aria-labelledby="work-title">
+    <h2 class="text-3xl" id="work-title">
+      Two projects, measured
+    </h2>
+    <div class="grid gap-5 lg:grid-cols-2">
+      {featured.map((project) => (
+        <FlagshipCard project={project} />
+      ))}
+    </div>
+    <p>
+      <a class="link inline-block py-1" href="/projects">
+        All projects
+      </a>
+    </p>
+  </section>
+
+  <section class="mt-16 grid gap-4 sm:mt-24" aria-labelledby="experience-title">
+    <h2 class="text-3xl" id="experience-title">
+      Experience
+    </h2>
+    <Experience compact />
+    <p>
+      <a class="link inline-block py-1" href="/about">
+        Full experience, education and skills
+      </a>
+    </p>
+  </section>
+
+  {now && (
+    <section class="mt-16 grid gap-4 sm:mt-24" aria-labelledby="now-title">
+      <h2 class="text-3xl" id="now-title">
+        Now
+      </h2>
+      <p class="meta">
+        Updated <RelativeDate date={now.data.date} />
+      </p>
+      <ul class="grid max-w-2xl list-disc gap-1.5 pl-5">
+        {nowItems.map((item) => (
+          <li>
+            <Text value={item} />
+          </li>
+        ))}
+      </ul>
+      <p>
+        <a class="link inline-block py-1" href="/now">
+          Everything I'm working on and learning
+        </a>
+      </p>
+    </section>
+  )}
+
+  {posts.length > 0 && (
+    <section class="mt-16 grid gap-4 sm:mt-24" aria-labelledby="writing-title">
+      <h2 class="text-3xl" id="writing-title">
+        Latest writing
+      </h2>
+      <ul class="grid gap-3">
+        {posts.map((post) => (
+          <li class="flex flex-wrap items-baseline gap-x-4">
+            <a class="link" href={`/blog/${post.id}`}>
+              {post.data.title}
+            </a>
+            <time class="meta" datetime={isoDate(post.data.date)}>
+              {formatDate(post.data.date)}
+            </time>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <section class="mt-16 grid gap-4 sm:mt-24" id="contact" aria-labelledby="contact-title">
+    <h2 class="text-3xl" id="contact-title">
+      Get in touch
+    </h2>
+    <Contact />
+  </section>
+</Base>

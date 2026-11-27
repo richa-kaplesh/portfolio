@@ -1,0 +1,23 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  /** An imported image, or a path in /public. */
+  src: ImageMetadata | string;
+  /** Required. Describe what the image shows. */
+  alt: string;
+  caption?: string;
+}
+const { src, alt, caption } = Astro.props;
+if (typeof alt !== 'string') throw new Error('<Figure> needs an alt text.');
+---
+
+<figure class="my-8">
+  {typeof src === 'string' ? (
+    <img src={src} alt={alt} loading="lazy" />
+  ) : (
+    <Image src={src} alt={alt} />
+  )}
+  {caption && <figcaption class="text-soft mt-2 text-base">{caption}</figcaption>}
+</figure>

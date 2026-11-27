@@ -1,0 +1,79 @@
+---
+interface Props {
+  code: string;
+  /** Required. Says what the diagram shows, for people who cannot see it. */
+  caption: string;
+}
+const { code, caption } = Astro.props;
+if (!caption) throw new Error('<Mermaid> needs a caption.');
+---
+
+{/* The source stays visible if JavaScript is off or the diagram fails to render. */}
+<figure class="mermaid-figure my-8">
+  <pre tabindex="0">{code.trim()}</pre>
+  <div class="overflow-x-auto" data-diagram hidden></div>
+  <figcaption class="text-soft mt-2 text-base">{caption}</figcaption>
+</figure>
+
+<script>
+  const figures = [...document.querySelectorAll<HTMLElement>('.mermaid-figure')];
+  const seen = new Set<HTMLElement>();
+  let count = 0;
+
+  const draw = async (figure: HTMLElement) => {
+    const source = figure.querySelector('pre');
+    const target = figure.querySelector<HTMLElement>('[data-diagram]');
+    if (!source || !target) return;
+    try {
+      const { default: mermaid } = await import('mermaid');
+      const css = getComputedStyle(document.documentElement);
+      const color = (name: string) => css.getPropertyValue(name).trim();
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        // The default engine is a 1.5 MB download; dagre draws these diagrams well.
+        layout: 'dagre',
+        theme: 'base',
+        fontFamily: 'Source Sans 3, sans-serif',
+        themeVariables: {
+          background: color('--paper'),
+          primaryColor: color('--card'),
+          primaryTextColor: color('--ink'),
+          primaryBorderColor: color('--accent'),
+          lineColor: color('--soft'),
+          textColor: color('--ink'),
+          edgeLabelBackground: color('--paper'),
+        },
+      });
+      count += 1;
+      const { svg } = await mermaid.render(`diagram-${count}`, source.textContent ?? '');
+      target.innerHTML = svg;
+      target.hidden = false;
+      source.hidden = true;
+    } catch {
+      target.hidden = true;
+      source.hidden = false;
+    }
+  };
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const figure = entry.target as HTMLElement;
+        if (!entry.isIntersecting || seen.has(figure)) continue;
+        seen.add(figure);
+        void draw(figure);
+      }
+    },
+    { rootMargin: '300px' },
+  );
+  for (const figure of figures) observer.observe(figure);
+
+  const redraw = async () => {
+    for (const figure of seen) await draw(figure);
+  };
+  new MutationObserver(redraw).observe(document.documentElement, {
+    attributeFilter: ['data-theme'],
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+</script>

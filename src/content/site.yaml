@@ -1,0 +1,32 @@
+# Everything personal that appears across the site. Never add a phone number here.
+main:
+  name: Richa Kaplesh
+  role: Applied AI / LLM Engineer
+  headline: I build LLM systems that fail over fast and know when not to answer.
+  currently: Currently an AI & Backend Engineer intern at LearnLine AI, working on the LLM grading pipeline for handwritten exam sheets.
+  description: Richa Kaplesh builds and evaluates LLM systems, with measured results.
+  bio: I build and evaluate LLM systems, from RAG and tool-calling agents to the evals, tracing and tests around them. I like work where the result can be measured, so most of my projects end with a before-and-after number. I have a B.Tech in Artificial Intelligence & Machine Learning.
+  lookingFor: applied AI and LLM engineering roles, in India first and open to roles abroad with visa sponsorship later.
+  github: https://github.com/richa-kaplesh
+  email: kapleshricha@gmail.com
+  linkedin: https://www.linkedin.com/in/richa-kaplesh-5b66a726a
+  resume: /resume.pdf
+  source: https://github.com/richa-kaplesh/portfolio
+  # location: City, Country
+  # photo: /photo.jpg
+  skills:
+    - group: LLM systems
+      items:
+        - RAG (hybrid BM25 + FAISS, reranking)
+        - Embeddings
+        - Tool-calling agents
+        - LLM evaluation
+        - Sandboxed code execution
+    - group: Machine learning
+      items: [scikit-learn, NumPy, Feature engineering, Classification, Backpropagation]
+    - group: Languages
+      items: [Python, SQL, TypeScript, Elixir (basic)]
+    - group: Backend and data
+      items: [FastAPI, REST APIs, PostgreSQL, Redis, pandas, OpenCV, PyMuPDF, Tesseract OCR, pytest]
+    - group: Tools
+      items: [Docker, GitHub Actions CI/CD, Git, Linux, Grafana Loki]

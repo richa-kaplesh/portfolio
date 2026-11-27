@@ -1,0 +1,108 @@
+.notebook {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+.notebook .nb-md > * + * {
+  margin-top: 0.9rem;
+}
+.notebook h2 {
+  font-size: 1.75rem;
+  margin-top: 1rem;
+}
+.notebook h3 {
+  font-size: 1.35rem;
+  margin-top: 0.75rem;
+}
+.notebook h4,
+.notebook h5,
+.notebook h6 {
+  font-weight: 600;
+}
+.notebook a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.notebook ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.notebook ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+.notebook blockquote {
+  padding-left: 1rem;
+  border-left: 1px solid var(--soft);
+  color: var(--soft);
+}
+.notebook strong {
+  font-weight: 600;
+}
+.notebook .nb-cell,
+.notebook .nb-out {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+.notebook summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--soft);
+  padding-block: 0.3rem;
+}
+.notebook .nb-error > summary {
+  color: var(--ink);
+}
+.notebook pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.notebook pre.nb-text {
+  border-color: transparent;
+  padding-block: 0.25rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.notebook :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
+.notebook table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+.notebook th,
+.notebook td {
+  text-align: left;
+  padding: 0.35rem 1.1rem 0.35rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.notebook th {
+  font-weight: 600;
+  color: var(--soft);
+}
+.notebook .nb-html {
+  overflow-x: auto;
+}
+/* Plots are drawn for a white page, so they keep one in the dark theme. */
+.notebook img {
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+}
+.notebook .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 4px;
+}

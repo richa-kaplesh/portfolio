@@ -1,0 +1,97 @@
+---
+import FilterBar from '@/components/FilterBar.astro';
+import Text from '@/components/Text.astro';
+import Base from '@/layouts/Base.astro';
+import { getRoadmap } from '@/lib/content';
+
+const horizons = await getRoadmap();
+const status = { done: 'Done', doing: 'Doing', planned: 'Planned' } as const;
+const total = horizons.reduce((sum, horizon) => sum + horizon.items.length, 0);
+const options = Object.entries(status).map(([value, label]) => ({ value, label }));
+---
+
+<Base title="Roadmap" description="Where I'm headed over the next months and years.">
+  <h1 class="text-4xl sm:text-5xl">Roadmap</h1>
+  {total > 0 && (
+    <FilterBar
+      param="status"
+      label="Filter by status"
+      noun="items"
+      options={options}
+      total={total}
+    />
+  )}
+  <div class="mt-10 max-w-2xl">
+    {horizons.length === 0 && <p>The roadmap is being written.</p>}
+    {horizons.map((data) => (
+      <section class="horizon">
+        <h2 class="text-2xl">{data.horizon}</h2>
+        <ul class="mt-4">
+          {data.items.map((item) => (
+            <li class="item" data-filter={item.status} data-status={item.status}>
+              <p class="leading-snug">
+                {item.link ? (
+                  <a class="link" href={item.link}>
+                    {item.title}
+                  </a>
+                ) : (
+                  <Text value={item.title} />
+                )}
+              </p>
+              <p class="meta">
+                {status[item.status]}
+                {item.example && ' (example item)'}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .horizon + .horizon {
+    margin-top: 2.5rem;
+  }
+  .horizon:not(:has(.item:not([hidden]))) {
+    display: none;
+  }
+  .item {
+    position: relative;
+    padding: 0 0 1.4rem 2rem;
+  }
+  .item::before {
+    content: '';
+    position: absolute;
+    top: 0.35rem;
+    left: 0;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: var(--paper);
+    z-index: 1;
+  }
+  .item::after {
+    content: '';
+    position: absolute;
+    top: 0.8rem;
+    bottom: -0.8rem;
+    left: calc(0.45rem - 1px);
+    width: 2px;
+    background: var(--rule);
+  }
+  .item:last-child::after {
+    display: none;
+  }
+  .item[data-status='done']::before {
+    background: var(--accent);
+  }
+  .item[data-status='doing']::before {
+    background: linear-gradient(90deg, var(--accent) 50%, var(--paper) 50%);
+  }
+  .item[data-status='planned']::before {
+    border-color: var(--soft);
+  }
+</style>

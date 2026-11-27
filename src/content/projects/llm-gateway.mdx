@@ -1,0 +1,111 @@
+---
+title: LLM Gateway
+tagline: 'A gateway that pools many free-tier LLM API keys into one reliable endpoint: quota-aware routing, millisecond failover, and clear errors.'
+status: live
+featured: true
+order: 1
+tags: [LLM infrastructure, Backend]
+stack: [Python, FastAPI, Redis, PostgreSQL, React, TypeScript, Docker]
+repo: https://github.com/richa-kaplesh/LLM-Gateway
+liveUrl: https://llm-gateway-self.vercel.app/
+liveLabel: Dashboard
+apiUrl: https://llm-gateway-qewa.onrender.com/docs
+apiLabel: API docs
+healthUrl: https://llm-gateway-qewa.onrender.com/health
+metrics:
+  - label: Gateway error rate
+    before: 21.0%
+    after: 6.7%
+  - label: Latency p95
+    before: 25.7 s
+    after: 0.99 s
+  - label: Fallback rate
+    before: 20.0%
+    after: 7.8%
+  - label: Unanswered questions, real client
+    before: 3/45
+    after: 0/50
+  - label: Provider rate-limit errors, two instances sharing Redis
+    after: 0 in 6,000+ calls
+    context: local load test, mock provider
+metricsNote: 'Live deployment. Before: all gateway traffic on the original design, 1 Oct to 18 Nov 2026 (1,444 requests). After: QueryMind running a 50-question evaluation on 20 Nov 2026.'
+---
+
+## Problem
+
+Free LLM tiers are small and strict. Groq allows a few thousand tokens per minute plus a daily cap per key. OpenRouter allows 50 requests a day per account. An app that calls one provider directly runs out within minutes, then fails slowly.
+
+The first version of this gateway did exactly that. It treated providers as the unit of capacity, retried in place with sleeps, and spent up to 26 seconds before failing.
+
+## Core idea
+
+The thing that really has a quota is **one API key × one model**, not a provider. The gateway calls each one a _deployment_ and declares it in a YAML file:
+
+```yaml
+- id: groq-1
+  provider: groq
+  adapter: openai_compatible
+  key_env: GROQ_API_KEY_1
+  model: openai/gpt-oss-20b
+  limits: { rpm: 30, tpm: 8000, rpd: 1000, tpd: 200000 }
+  tier: smart
+```
+
+The live pool is 8 deployments: 3 Groq keys × 2 models, plus 2 OpenRouter keys. The registry refuses to boot on a bad entry, because a silently skipped key is silently lost capacity.
+
+Counting this way changes what a failure means. A 429 belongs to one account, so only that key cools down. A timeout or a 5xx means the model itself is broken, so a circuit breaker opens for provider × model and every key of that model is skipped.
+
+## Architecture
+
+<Flow
+  label="How a request moves through LLM Gateway"
+  steps={[
+    { title: 'POST /query', detail: 'The client sends an API key and a tier: smart or fast.' },
+    {
+      title: 'Admission control',
+      detail: '32 requests in flight and 64 waiting.',
+      aside: 'Beyond that: 429 overloaded, at once.',
+    },
+    {
+      title: 'Selection',
+      detail:
+        'Filter on hard rules, then take the better of two random survivors by daily headroom left.',
+    },
+    {
+      title: 'Attempt',
+      detail: 'An adapter calls the provider and maps every error to one gateway error class.',
+      aside: 'On failure: cool down the key or trip the breaker, then fail over to another key.',
+    },
+    {
+      title: 'State store',
+      detail: 'Meters, cooldowns, breakers and health, in memory or in Redis through Lua scripts.',
+    },
+    {
+      title: 'Telemetry',
+      detail: 'Every attempt is a row in Postgres, failed ones included. It feeds the dashboard.',
+    },
+  ]}
+/>
+
+**Two random choices, not the single best.** Always picking the top score sends every request to whichever key's lagging score looks best. Drawing two and taking the better one avoids the herd.
+
+**Fail over, don't retry in place.** There are at most 2 extra attempts after hard failures. 429s and local refusals don't use up that budget.
+
+**Daily quotas are first-class.** The last 10% of each key is reserved for conversations already mid tool-loop, so work that has spent calls can finish.
+
+## Results
+
+The largest change was in the tail. Three 2-second sleeps on the same key plus a 20-second queue gave a p95 of 25.7 s. Failing over at once brought it to 0.99 s, while p50 moved from 0.61 s to 0.52 s. Attempts spread across the three Groq keys as 61 / 58 / 58.
+
+The before and after windows are different traffic, so read them as the system in use, not as a controlled experiment. Capacity was measured separately and locally, against a mock provider: two instances sharing Redis handled about 3,000 calls per minute at 100 users, with a p95 of about 2.3 s.
+
+## What I'd do next
+
+Load testing found problems that are not fixed yet:
+
+- About 37 Redis commands per call, mostly sequential. They cost about 22% of throughput at 50 users.
+- Two random choices can starve a key for good, because its latency score only updates when it serves a call.
+- Throughput falls past the knee instead of levelling off.
+- Admission limits are per instance, not global.
+
+The [README](https://github.com/richa-kaplesh/LLM-Gateway#readme) has every design decision, the error taxonomy and the engineering log. [QueryMind](/projects/querymind) is a real client of this gateway.

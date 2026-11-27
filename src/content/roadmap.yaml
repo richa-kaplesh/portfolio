@@ -1,0 +1,32 @@
+# status: done | doing | planned. Items with example: true are samples to replace.
+- id: now
+  order: 1
+  horizon: Now
+  items:
+    - title: Ship this portfolio and keep the Now page fresh
+      status: doing
+      example: true
+    - title: 'TODO(richa): what you are doing now'
+      status: planned
+- id: three-months
+  order: 2
+  horizon: Next 3 months
+  items:
+    - title: Publish the first technical post
+      status: planned
+      link: /blog
+      example: true
+    - title: 'TODO(richa): your next three months'
+      status: planned
+- id: this-year
+  order: 3
+  horizon: This year
+  items:
+    - title: 'TODO(richa): your plan for this year'
+      status: planned
+- id: two-four-years
+  order: 4
+  horizon: 2–4 years
+  items:
+    - title: 'TODO(richa): where you want to be in 2–4 years'
+      status: planned
