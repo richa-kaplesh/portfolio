@@ -29,7 +29,9 @@ const { Content } = await render(project);
       </p>
       <h1 class="text-4xl sm:text-5xl">{data.title}</h1>
       <p class="text-xl leading-normal">{data.tagline}</p>
-      {data.healthUrl && <StatusPill id={project.id} project={data.title} url={data.healthUrl} href={data.liveUrl} />}
+      {data.healthUrl && (
+        <StatusPill id={project.id} project={data.title} url={data.healthUrl} href={data.liveUrl} />
+      )}
       <ProjectLinks project={data} />
       {showTodos && data.todos.length > 0 && (
         <ul class="grid gap-1">
